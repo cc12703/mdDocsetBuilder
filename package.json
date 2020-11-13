@@ -1,0 +1,40 @@
+{
+  "name": "mddocsetbuilder",
+  "version": "1.0.0",
+  "description": "markdown文件树生成docset",
+  "private": true,
+  "bin": {
+    "mddocsetbuilder": "./dist/cli.js"
+  },
+  "files": [
+    "dist/**/*.js"
+  ],
+  "scripts": {
+    "debug": "ts-node -r tsconfig-paths/register src/cli.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cc12703/mdDocsetBuilder.git"
+  },
+  "author": "morris",
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/fs-extra": "^9.0.3",
+    "@types/node": "^14.14.6",
+    "@types/sqlite3": "^3.1.6",
+    "@types/urlencode": "^1.1.2",
+    "@types/walk": "^2.3.0",
+    "ts-node": "^9.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "@shd101wyy/mume": "^0.6.0",
+    "commander": "^6.2.0",
+    "fs-extra": "^9.0.1",
+    "markmap-lib": "^0.10.1",
+    "sqlite3": "^5.0.0",
+    "urlencode": "^1.1.0",
+    "walk": "^2.3.14"
+  }
+}
