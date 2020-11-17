@@ -24,7 +24,7 @@ markdown文件树生成docset
 
 ### 命令行调用
 
-npx ts-node -r tsconfig-paths/register src/cli.ts xxxx -o xxxx
+npm run debug -- input-path -n name -o output-path
 
 ## 依赖
 

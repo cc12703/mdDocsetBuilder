@@ -7,7 +7,7 @@ import * as mume from '@shd101wyy/mume'
 import * as fse from 'fs-extra'
 import * as markmap from 'markmap-lib'
 import * as urlencode from 'urlencode'
-
+import cheerio from 'cheerio'
 
 import * as util from '@/util'
 
@@ -50,10 +50,15 @@ async function mdFileToHtml(inFile: string, outFile: string) {
         filePath: tempFile,
         projectDirectoryPath: ''
     })
-
     await engine.htmlExport({ offline: true, runAllCodeChunks: true})
 
-    fse.copySync(tempOutFile, outFile)
+
+    const htmlData = await fsP.readFile(tempOutFile)
+    const htmlRoot = cheerio.load(htmlData)
+
+    htmlRoot('span[class=katex-html]').remove()
+
+    await fsP.writeFile(outFile, htmlRoot.html())
 }
 
 
