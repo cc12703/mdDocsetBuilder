@@ -24,7 +24,7 @@ markdown文件树生成docset
 
 ### 命令行调用
 
-npm run debug -- input-path -n name -o output-path
+npm run dev -- input-path -n name -o output-path
 
 ## 依赖
 
@@ -44,6 +44,16 @@ npm run debug -- input-path -n name -o output-path
 * [github文档](https://github.com/tj/commander.js/blob/HEAD/Readme_zh-CN.md)
 
 
+
+## 安装
+
+### 打包
+
+npm run build && npm pack
+
+### 安装压缩包
+
+sudo npm_config_user=root npm install -g xxx.tgz
 
 ## 参考资料
 

@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 
 import pkg from 'root/package.json'
 import program from 'commander'
@@ -17,4 +15,4 @@ program
     buildDocset(input, cmd.output, cmd.docname)
 })
 
-program.parse(process.argv);
+program.parse(process.argv)
