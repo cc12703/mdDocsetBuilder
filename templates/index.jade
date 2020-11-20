@@ -1,0 +1,16 @@
+//input-data, format JSON
+//      { 'classifys' :
+//            [{ "name" : xxx, 
+//                 "books" : [{ "name" : xxx, "path" : xxx }] }] 
+//      }
+
+html
+    meta(http-equiv="Content-Type" content="text/html; charset=utf-8")
+    head
+        文件索引
+    body
+        for classify in classifys
+            p #{classify.name}
+            ul 
+                for book in classify.books
+                    li: a(href="#{book.htmlUrlPath}") #{book.name}

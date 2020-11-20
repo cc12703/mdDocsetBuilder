@@ -8,18 +8,28 @@ import * as fse from 'fs-extra'
 import * as markmap from 'markmap-lib'
 import * as urlencode from 'urlencode'
 import cheerio from 'cheerio'
+import jade from 'jade'
 
 import * as util from '@/util'
 
 
-class DocItemInfo {
+class BookInfo {
     classify: string = ''
     name: string = ''
 
     originFile: string = ''
 
     htmlFile: string = ''
+    htmlUrlPath: string = ''
+
     mmHtmlFile: string = ''
+    mmHtmlUrlPath: string = ''
+}
+
+class ClassifyInfo {
+    name: string = ''
+
+    books: BookInfo[] = []
 }
 
 
@@ -28,7 +38,9 @@ class DocInfo {
     
     inputDir: string
 
-    items: DocItemInfo[] = []
+    indexHtmlFile: string = ''
+
+    books: BookInfo[] = []
 
     constructor(inputDir: string) {
         this.inputDir = inputDir
@@ -63,10 +75,13 @@ async function mdFileToHtml(inFile: string, outFile: string) {
 
 
 function buildHtmlFiles(info: DocInfo, output: string) {
-    info.items.forEach(item => {
-        const baseName = path.basename(item.originFile, '.md')
-        item.htmlFile = path.join(output, `${item.classify}_${baseName}.html`)
-        mdFileToHtml(item.originFile, item.htmlFile)
+    info.books.forEach(book => {
+        const baseName = path.basename(book.originFile, '.md')
+        const fileName = `${book.classify}_${baseName}.html`
+        book.htmlFile = path.join(output, fileName)
+        book.htmlUrlPath = urlencode.encode(fileName)
+
+        mdFileToHtml(book.originFile, book.htmlFile)
     })
 }
 
@@ -80,14 +95,32 @@ async function mdFileToMMHtml(inFile: string, outFile: string) {
 }
 
 function buildMMHtmlFiles(info: DocInfo, output: string) {
-    info.items.forEach(item => {
-        const baseName = path.basename(item.originFile, '.md')
-        item.mmHtmlFile = path.join(output, `${item.classify}_${baseName}_mm.html`)
-        mdFileToMMHtml(item.originFile, item.mmHtmlFile)
+    info.books.forEach(book => {
+        const baseName = path.basename(book.originFile, '.md')
+        const fileName = `${book.classify}_${baseName}_mm.html`
+        book.mmHtmlFile = path.join(output, fileName)
+        book.mmHtmlUrlPath = urlencode.encode(fileName)
+
+        mdFileToMMHtml(book.originFile, book.mmHtmlFile)
     })
 }
 
 
+function collectClassifyFromDoc(info: DocInfo): ClassifyInfo[] {
+    const cMapInfo = info.books.reduce((mapInfo, book) => {
+        let cInfo = mapInfo.get(book.classify)
+        if(cInfo == null) {
+            cInfo = new ClassifyInfo()
+            cInfo.name = book.classify
+            mapInfo.set(book.classify, cInfo)
+        }
+        cInfo.books.push(book)
+        return mapInfo
+    }, new Map<string, ClassifyInfo>())
+
+    return Array.from(cMapInfo.keys())
+                .map(name => cMapInfo.get(name)!)
+}
 
 function pathToClassify(filePath: string, root: string): string {
     let relaPath = filePath.replace(root, '')
@@ -108,11 +141,11 @@ function collectAllDocs(input: string): Promise<DocInfo> {
                 return
             }
             
-            let item = new DocItemInfo()
-            item.classify = pathToClassify(dir, input)
-            item.name = path.basename(stats.name, '.md')
-            item.originFile = path.join(dir, stats.name)
-            info.items.push(item)
+            let book = new BookInfo()
+            book.classify = pathToClassify(dir, input)
+            book.name = path.basename(stats.name, '.md')
+            book.originFile = path.join(dir, stats.name)
+            info.books.push(book)
 
             next()
         })
@@ -137,7 +170,22 @@ async function buildInfoFile(output: string, name: string) {
 
 
 
-async function buildIndexFile(output: string, info: DocInfo, docOutput: string) {
+async function jadeToHtml(inFile: string, outFile: string, templData: Object) {
+    const renderFn = jade.compileFile(inFile, {pretty: true, doctype: 'xml'})
+    await fsP.writeFile(outFile, renderFn(templData), 'utf8')
+}
+
+
+function buildIndexHtml(info: DocInfo, output: string) {
+    info.indexHtmlFile = path.join(output, 'index.html')
+
+    const classifyInfo = collectClassifyFromDoc(info)
+    const templData = {'classifys': classifyInfo}
+    jadeToHtml('./templates/index.jade', info.indexHtmlFile, templData)
+}
+
+
+async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
     const dbFile = path.join(output, 'docSet.dsidx')
 
     const db = await util.openDatabase(dbFile)
@@ -145,14 +193,16 @@ async function buildIndexFile(output: string, info: DocInfo, docOutput: string) 
     await util.runSqlInDatabase(db, 'CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);')
 
     let sql = ''
-    info.items.forEach(item => {
-        const guideName = `${item.classify}_${item.name}` 
-        const htmlPath = urlencode.encode(item.htmlFile.replace(docOutput, ''))
-        sql += `INSERT INTO searchIndex(name, type, path) VALUES ('${guideName}', 'Guide', '${htmlPath}');`
 
-        const mmGuideName = `${item.classify}_${item.name}_思维导图` 
-        const mmHtmlPath = urlencode.encode(item.mmHtmlFile.replace(docOutput, ''))
-        sql += `INSERT INTO searchIndex(name, type, path) VALUES ('${mmGuideName}', 'Guide', '${mmHtmlPath}');`
+    const indexHtmlUrlPath = urlencode.encode(info.indexHtmlFile.replace(docOutput, ''))
+    sql += `INSERT INTO searchIndex(name, type, path) VALUES ('索引页', 'Guide', '${indexHtmlUrlPath}');`
+
+    info.books.forEach(book => {
+        const guideName = `${book.classify}_${book.name}` 
+        sql += `INSERT INTO searchIndex(name, type, path) VALUES ('${guideName}', 'Entry', '${book.htmlUrlPath}');`
+
+        const mmGuideName = `${book.classify}_${book.name}_思维导图` 
+        sql += `INSERT INTO searchIndex(name, type, path) VALUES ('${mmGuideName}', 'Entry', '${book.mmHtmlUrlPath}');`
     })
     
     await util.exceSqlInDatabase(db, sql)
@@ -180,8 +230,9 @@ export async function buildDocset(input: string, output: string, name: string) {
     
     buildHtmlFiles(docInfo, docOutput)
     buildMMHtmlFiles(docInfo, docOutput)
+    buildIndexHtml(docInfo, docOutput)
 
     buildInfoFile(contOutput, name)
-    buildIndexFile(resOutput, docInfo, docOutput)
+    buildIndexDB(resOutput, docInfo, docOutput)
 
 }

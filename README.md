@@ -58,3 +58,4 @@ sudo npm_config_user=root npm install -g xxx.tgz
 ## 参考资料
 
 * [docset生成](https://kapeli.com/docsets#dashDocset)
+* [Jade语法](http://naltatis.github.io/jade-syntax-docs/#about)
