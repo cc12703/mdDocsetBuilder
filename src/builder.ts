@@ -86,10 +86,57 @@ function buildHtmlFiles(info: DocInfo, output: string) {
 }
 
 
+const MM_TBAR_VERSION = '0.1.3'
+const MM_TBAR_URL_CSS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${MM_TBAR_VERSION}/dist/style.min.css`
+const MM_TBAR_URL_JS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${MM_TBAR_VERSION}`
+
+const renderToolbar = new Function(`\
+    const toolbar = new markmap.Toolbar();
+    toolbar.attach(mm);
+    const el = toolbar.render();
+    el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
+    document.body.append(el); \
+`)
+
+
+function addToolBarToAssets(assets: any) : any {
+    return {
+        styles: [
+            ...assets.styles || [],
+            {
+                type: 'stylesheet',
+                data: {
+                  href: MM_TBAR_URL_CSS,
+                },
+            },
+        ],
+        scripts: [
+            ...assets.scripts || [],
+            {
+              type: 'script',
+              data: {
+                src: MM_TBAR_URL_JS,
+              },
+            },
+            {
+              type: 'iife',
+              data: {
+                fn: (r:any) => {
+                  setTimeout(r);
+                },
+                getParams: () => [renderToolbar],
+              },
+            },
+        ],
+    }
+}
+
+
 async function mdFileToMMHtml(inFile: string, outFile: string) {
     const content = await fsP.readFile(inFile, 'utf8')
     const { root, features } = markmap.transform(content)
-    const assets = markmap.getUsedAssets(features)
+    const assets = addToolBarToAssets(
+                        markmap.getUsedAssets(features))
     const html = markmap.fillTemplate(root, assets)
     await fsP.writeFile(outFile, html, 'utf8')
 }
@@ -128,7 +175,7 @@ function pathToClassify(filePath: string, root: string): string {
         relaPath = relaPath.substr(1)
     }
 
-    return relaPath.replace(path.sep, '_')
+    return (path.sep=='/')? relaPath.replace(/\//g, '_') : relaPath.replace(/\\/g, '_')
 }
 
 function collectAllDocs(input: string): Promise<DocInfo> {
