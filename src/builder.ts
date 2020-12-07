@@ -86,9 +86,9 @@ function buildHtmlFiles(info: DocInfo, output: string) {
 }
 
 
-const MM_TBAR_VERSION = '0.1.3'
-const MM_TBAR_URL_CSS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${MM_TBAR_VERSION}/dist/style.min.css`
-const MM_TBAR_URL_JS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${MM_TBAR_VERSION}`
+const MM_TBAR_VERSION = '0.1.4'
+const MM_TBAR_URL_CSS = `https://cdn.jsdelivr.net/npm/@cc12703m/markmap-toolbar@${MM_TBAR_VERSION}/dist/style.min.css`
+const MM_TBAR_URL_JS = `https://cdn.jsdelivr.net/npm/@cc12703m/markmap-toolbar@${MM_TBAR_VERSION}`
 
 const renderToolbar = new Function(`\
     const toolbar = new markmap.Toolbar();

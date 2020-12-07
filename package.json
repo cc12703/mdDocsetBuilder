@@ -1,6 +1,6 @@
 {
   "name": "mddocsetbuilder",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "markdown文件树生成docset",
   "bin": {
     "mddocsetbuilder": "./bin/loader.js"
@@ -43,7 +43,7 @@
     "commander": "^6.2.0",
     "fs-extra": "^9.0.1",
     "jade": "^1.11.0",
-    "markmap-lib": "^0.10.1",
+    "@cc12703m/markmap-lib": "^0.10.2",
     "sqlite3": "^5.0.0",
     "urlencode": "^1.1.0",
     "walk": "^2.3.14"
