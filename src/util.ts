@@ -4,7 +4,9 @@ import * as sqlite from 'sqlite3'
 
 
 
-
+export function getCurRunPath(): string {
+    return (process.env.RUN_PATH) ? process.env.RUN_PATH : process.cwd()
+}
 
 
 

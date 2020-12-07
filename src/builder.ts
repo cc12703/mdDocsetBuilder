@@ -11,6 +11,7 @@ import cheerio from 'cheerio'
 import jade from 'jade'
 
 import * as util from '@/util'
+import { getCurRunPath } from '@/util'
 
 
 class BookInfo {
@@ -204,7 +205,8 @@ function collectAllDocs(input: string): Promise<DocInfo> {
 
 
 async function buildInfoFile(output: string, name: string) {
-    const templ = await fsP.readFile('./templates/Info.plist', 'utf8')
+    const templFile = path.join(getCurRunPath(), 'templates/Info.plist')
+    const templ = await fsP.readFile(templFile, 'utf8')
 
     const outContent = templ.replace(/__NAME__/g, name)
     const outFile = path.join(output, 'Info.plist')
@@ -228,7 +230,8 @@ function buildIndexHtml(info: DocInfo, output: string) {
 
     const classifyInfo = collectClassifyFromDoc(info)
     const templData = {'classifys': classifyInfo}
-    jadeToHtml('./templates/index.jade', info.indexHtmlFile, templData)
+    const templFile = path.join(getCurRunPath(), 'templates/index.jade')
+    jadeToHtml(templFile, info.indexHtmlFile, templData)
 }
 
 

@@ -5,6 +5,7 @@ import { buildDocset } from '@/builder'
 
 
 
+
 program
 .version(pkg.version, '-v, --version', 'output the current version')
 .description('Create a Docset from a Markdown input dir')
