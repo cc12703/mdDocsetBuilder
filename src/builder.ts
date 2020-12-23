@@ -61,17 +61,13 @@ async function mdFileToHtml(inFile: string, outFile: string) {
 
     const engine = new mume.MarkdownEngine({
         filePath: tempFile,
-        projectDirectoryPath: ''
+        projectDirectoryPath: '',
+        config: {
+            mathRenderingOption: 'MathJax'
+        }
     })
-    await engine.htmlExport({ offline: true, runAllCodeChunks: true})
-
-
-    const htmlData = await fsP.readFile(tempOutFile)
-    const htmlRoot = cheerio.load(htmlData)
-
-    htmlRoot('span[class=katex-html]').remove()
-
-    await fsP.writeFile(outFile, htmlRoot.html())
+    await engine.htmlExport({ offline: false, runAllCodeChunks: true})
+    await fsP.copyFile(tempOutFile, outFile)
 }
 
 
