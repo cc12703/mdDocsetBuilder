@@ -3,3 +3,4 @@
 .DS_Store
 /temp
 /project.code-workspace
+*.tgz

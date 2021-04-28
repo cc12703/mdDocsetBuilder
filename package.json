@@ -1,5 +1,5 @@
 {
-  "name": "mddocsetbuilder",
+  "name": "@cc12703m/mddocsetbuilder",
   "version": "1.2.4",
   "description": "markdown文件树生成docset",
   "bin": {

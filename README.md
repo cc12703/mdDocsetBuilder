@@ -55,6 +55,12 @@ npm run build && npm pack
 
 sudo npm_config_user=root npm install -g xxx.tgz
 
+
+### 发布到npm
+
+npm publish --access public
+
+
 ## 参考资料
 
 * [docset生成](https://kapeli.com/docsets#dashDocset)
