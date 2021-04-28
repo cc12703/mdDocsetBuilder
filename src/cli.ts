@@ -12,8 +12,9 @@ program
 .arguments('<input>')
 .option('-o --output <dir>', 'specify output dir of output Docset')
 .option('-n --docname <name>', 'specify filename of the output Docset')
+.option('-p --pkg <format>', 'generate a compressed package, format value is tgz ')
 .action((input, cmd) => {
-    buildDocset(input, cmd.output, cmd.docname)
+    buildDocset(input, cmd.output, cmd.docname, cmd.pkg)
 })
 
 program.parse(process.argv)

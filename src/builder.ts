@@ -7,8 +7,8 @@ import * as mume from '@shd101wyy/mume'
 import * as fse from 'fs-extra'
 import * as markmap from '@cc12703m/markmap-lib'
 import * as urlencode from 'urlencode'
-import cheerio from 'cheerio'
 import jade from 'jade'
+import * as tar from 'tar'
 
 import * as util from '@/util'
 import { getCurRunPath } from '@/util'
@@ -257,12 +257,22 @@ async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
 }
 
 
+function buildPkgOfTGZ(output: string, docsetDirName: string) : Promise<void> {
+    return tar.c(
+        {
+            gzip: true,
+            file: path.join(output, `${docsetDirName}.tgz`),
+            cwd: output,
+        },
+        [docsetDirName]
+    )    
+}
 
 
+export async function buildDocset(input: string, output: string, name: string, pkg: string) {
 
-export async function buildDocset(input: string, output: string, name: string) {
-
-    const rootOutput = path.join(output, `${name}.docset`)
+    const docsetDirName = `${name}.docset`
+    const rootOutput = path.join(output, docsetDirName)
     fse.emptyDirSync(rootOutput)
     fse.emptyDirSync('./temp')
 
@@ -280,5 +290,9 @@ export async function buildDocset(input: string, output: string, name: string) {
 
     buildInfoFile(contOutput, name)
     buildIndexDB(resOutput, docInfo, docOutput)
+
+    if(pkg === 'tgz') {
+        await buildPkgOfTGZ(output, docsetDirName)
+    }
 
 }
