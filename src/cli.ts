@@ -14,7 +14,7 @@ program
 .option('-n --docname <name>', 'specify filename of the output Docset')
 .option('-p --pkg <format>', 'generate a compressed package, format value is tgz ')
 .action((input, cmd) => {
-    buildDocset(input, cmd.output, cmd.docname, cmd.pkg).catch((err)=> console.info(err))
+    buildDocset(input, cmd.output, cmd.docname, cmd.pkg)
 })
 
 program.parse(process.argv)

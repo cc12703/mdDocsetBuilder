@@ -1,6 +1,6 @@
 {
   "name": "@cc12703m/mddocsetbuilder",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "markdown文件树生成docset",
   "bin": {
     "mddocsetbuilder": "./bin/loader.js"
@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "webpack",
-    "dev": "ts-node -r tsconfig-paths/register src/cli.ts"
+    "dev": "ts-node -r tsconfig-paths/register src/cli.ts",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

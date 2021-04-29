@@ -252,8 +252,8 @@ async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
     const db = await util.openDatabase(dbFile)
 
     await util.runSqlInDatabase(db, 'CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);')
-    let sql = ''
 
+    let sql = ''
     const indexHtmlUrlPath = urlencode.encode(info.indexHtmlFile.replace(docOutput, ''))
     sql += `INSERT INTO searchIndex(name, type, path) VALUES ('索引页', 'Guide', '${indexHtmlUrlPath}');`
     info.books.forEach(book => {
@@ -324,4 +324,5 @@ export async function buildDocset(input: string, output: string, name: string, p
         console.error(err)
         process.exit(5)
     }
+
 }
