@@ -57,6 +57,7 @@ async function mdFileToHtml(inFile: string, outFile: string) {
     const tempFile = path.join('./temp/mume', `${baseName}.md`)
     const tempOutFile = tempFile.replace('.md', '.html')
 
+    console.log(`md to html ${inFile}`)
     fse.copySync(inFile, tempFile)    
 
     const engine = new mume.MarkdownEngine({
@@ -72,6 +73,7 @@ async function mdFileToHtml(inFile: string, outFile: string) {
 
 
 function buildHtmlFiles(info: DocInfo, output: string) {
+    console.log('do buildHtmlFile')
     info.books.forEach(book => {
         const baseName = path.basename(book.originFile, '.md')
         const fileName = `${book.classify}_${baseName}.html`
@@ -130,6 +132,8 @@ function addToolBarToAssets(assets: any) : any {
 
 
 async function mdFileToMMHtml(inFile: string, outFile: string) {
+    console.log(`md to mmhtml ${inFile}`)
+
     const content = await fsP.readFile(inFile, 'utf8')
     const { root, features } = markmap.transform(content)
     const assets = addToolBarToAssets(
@@ -139,6 +143,8 @@ async function mdFileToMMHtml(inFile: string, outFile: string) {
 }
 
 function buildMMHtmlFiles(info: DocInfo, output: string) {
+    console.log('do buildMMHtmlFiles')
+
     info.books.forEach(book => {
         const baseName = path.basename(book.originFile, '.md')
         const fileName = `${book.classify}_${baseName}_mm.html`
@@ -201,6 +207,8 @@ function collectAllDocs(input: string): Promise<DocInfo> {
 
 
 async function buildInfoFile(output: string, name: string) {
+    console.log('do buildInfoFile')
+
     const templFile = path.join(getCurRunPath(), 'templates/Info.plist')
     const templ = await fsP.readFile(templFile, 'utf8')
 
@@ -222,6 +230,8 @@ async function jadeToHtml(inFile: string, outFile: string, templData: Object) {
 
 
 function buildIndexHtml(info: DocInfo, output: string) {
+    console.log('do buildIndexHtml')
+
     info.indexHtmlFile = path.join(output, 'index.html')
 
     const classifyInfo = collectClassifyFromDoc(info)
@@ -232,17 +242,16 @@ function buildIndexHtml(info: DocInfo, output: string) {
 
 
 async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
-    const dbFile = path.join(output, 'docSet.dsidx')
+    console.log('do buildIndexDB')
 
+    const dbFile = path.join(output, 'docSet.dsidx')
     const db = await util.openDatabase(dbFile)
 
     await util.runSqlInDatabase(db, 'CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);')
-
     let sql = ''
 
     const indexHtmlUrlPath = urlencode.encode(info.indexHtmlFile.replace(docOutput, ''))
     sql += `INSERT INTO searchIndex(name, type, path) VALUES ('索引页', 'Guide', '${indexHtmlUrlPath}');`
-
     info.books.forEach(book => {
         const guideName = `${book.classify}_${book.name}` 
         sql += `INSERT INTO searchIndex(name, type, path) VALUES ('${guideName}', 'Entry', '${book.htmlUrlPath}');`
@@ -252,7 +261,6 @@ async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
     })
     
     await util.exceSqlInDatabase(db, sql)
-
     await util.closeDatabase(db)
 }
 
@@ -271,6 +279,11 @@ function buildPkgOfTGZ(output: string, docsetDirName: string) : Promise<void> {
 
 export async function buildDocset(input: string, output: string, name: string, pkg: string) {
 
+    console.log(`cmd input ${input}`)
+    console.log(`cmd output ${output}`)
+    console.log(`cmd name ${name}`)
+    console.log(`cmd pkg ${pkg}`)
+
     const docsetDirName = `${name}.docset`
     const rootOutput = path.join(output, docsetDirName)
     fse.emptyDirSync(rootOutput)
@@ -278,6 +291,7 @@ export async function buildDocset(input: string, output: string, name: string, p
 
 
     const docInfo = await collectAllDocs(input)
+    console.log(`collect info: doc number ${docInfo.books.length}`)
 
     const contOutput = path.join(rootOutput, 'Contents')
     const resOutput = path.join(rootOutput, 'Contents/Resources')
