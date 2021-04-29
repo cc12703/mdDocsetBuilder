@@ -14,6 +14,9 @@ import * as util from '@/util'
 import { getCurRunPath } from '@/util'
 
 
+import toolPkg from 'root/package.json'
+
+
 class BookInfo {
     classify: string = ''
     name: string = ''
@@ -50,6 +53,9 @@ class DocInfo {
 }
 
 
+function buildMumeCfgPath() {
+    return path.join(process.cwd(), '.mume')
+}
 
 
 async function mdFileToHtml(inFile: string, outFile: string) {
@@ -64,6 +70,7 @@ async function mdFileToHtml(inFile: string, outFile: string) {
         filePath: tempFile,
         projectDirectoryPath: '',
         config: {
+            configPath: buildMumeCfgPath(),
             mathRenderingOption: 'MathJax'
         }
     })
@@ -285,13 +292,16 @@ function buildPkgOfTGZ(output: string, docsetDirName: string) : Promise<void> {
 export async function buildDocset(input: string, output: string, name: string, pkg: string) {
 
     try {
+        console.log(`info version: ${toolPkg.version}`)
+        console.log(`info cwd: ${process.cwd()}`)
+
         console.log(`cmd input ${input}`)
         console.log(`cmd output ${output}`)
         console.log(`cmd name ${name}`)
         console.log(`cmd pkg ${pkg}`)
-        console.log(`info cwd ${process.cwd()}`)
 
-        await mume.init(path.join(process.cwd(), '.mume'))
+
+        await mume.init(buildMumeCfgPath())
 
         const docsetDirName = `${name}.docset`
         const rootOutput = path.join(output, docsetDirName)
