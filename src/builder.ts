@@ -322,6 +322,6 @@ export async function buildDocset(input: string, output: string, name: string, p
 
     } catch(err) {
         console.error(err)
-        process.exit(-1)
+        process.exit(5)
     }
 }
