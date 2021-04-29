@@ -72,16 +72,18 @@ async function mdFileToHtml(inFile: string, outFile: string) {
 }
 
 
-function buildHtmlFiles(info: DocInfo, output: string) {
+async function buildHtmlFiles(info: DocInfo, output: string) {
     console.log('do buildHtmlFile')
-    info.books.forEach(book => {
+
+    for (var index in info.books) {
+        var book = info.books[index]
         const baseName = path.basename(book.originFile, '.md')
         const fileName = `${book.classify}_${baseName}.html`
         book.htmlFile = path.join(output, fileName)
         book.htmlUrlPath = urlencode.encode(fileName)
 
-        mdFileToHtml(book.originFile, book.htmlFile).catch((error)=> console.log(error))
-    })
+        await mdFileToHtml(book.originFile, book.htmlFile)
+    }
 }
 
 
@@ -142,17 +144,19 @@ async function mdFileToMMHtml(inFile: string, outFile: string) {
     await fsP.writeFile(outFile, html, 'utf8')
 }
 
-function buildMMHtmlFiles(info: DocInfo, output: string) {
+async function buildMMHtmlFiles(info: DocInfo, output: string) {
     console.log('do buildMMHtmlFiles')
 
-    info.books.forEach(book => {
+    for(var index in info.books) {
+        var book = info.books[index]
+
         const baseName = path.basename(book.originFile, '.md')
         const fileName = `${book.classify}_${baseName}_mm.html`
         book.mmHtmlFile = path.join(output, fileName)
         book.mmHtmlUrlPath = urlencode.encode(fileName)
 
-        mdFileToMMHtml(book.originFile, book.mmHtmlFile).catch((error)=> console.log(error))
-    })
+        await mdFileToMMHtml(book.originFile, book.mmHtmlFile)
+    }
 }
 
 
@@ -229,7 +233,7 @@ async function jadeToHtml(inFile: string, outFile: string, templData: Object) {
 }
 
 
-function buildIndexHtml(info: DocInfo, output: string) {
+async function buildIndexHtml(info: DocInfo, output: string) {
     console.log('do buildIndexHtml')
 
     info.indexHtmlFile = path.join(output, 'index.html')
@@ -237,7 +241,7 @@ function buildIndexHtml(info: DocInfo, output: string) {
     const classifyInfo = collectClassifyFromDoc(info)
     const templData = {'classifys': classifyInfo}
     const templFile = path.join(getCurRunPath(), 'templates/index.jade')
-    jadeToHtml(templFile, info.indexHtmlFile, templData)
+    await jadeToHtml(templFile, info.indexHtmlFile, templData)
 }
 
 
@@ -266,6 +270,7 @@ async function buildIndexDB(output: string, info: DocInfo, docOutput: string) {
 
 
 function buildPkgOfTGZ(output: string, docsetDirName: string) : Promise<void> {
+    console.log('do buildPkgOfTGZ')
     return tar.c(
         {
             gzip: true,
@@ -279,34 +284,44 @@ function buildPkgOfTGZ(output: string, docsetDirName: string) : Promise<void> {
 
 export async function buildDocset(input: string, output: string, name: string, pkg: string) {
 
-    console.log(`cmd input ${input}`)
-    console.log(`cmd output ${output}`)
-    console.log(`cmd name ${name}`)
-    console.log(`cmd pkg ${pkg}`)
+    try {
+        console.log(`cmd input ${input}`)
+        console.log(`cmd output ${output}`)
+        console.log(`cmd name ${name}`)
+        console.log(`cmd pkg ${pkg}`)
+        console.log(`info cwd ${process.cwd()}`)
 
-    const docsetDirName = `${name}.docset`
-    const rootOutput = path.join(output, docsetDirName)
-    fse.emptyDirSync(rootOutput)
-    fse.emptyDirSync('./temp')
+        await mume.init(path.join(process.cwd(), '.mume'))
+
+        const docsetDirName = `${name}.docset`
+        const rootOutput = path.join(output, docsetDirName)
+        fse.emptyDirSync(rootOutput)
+        fse.emptyDirSync('./temp')
 
 
-    const docInfo = await collectAllDocs(input)
-    console.log(`collect info: doc number ${docInfo.books.length}`)
+        const docInfo = await collectAllDocs(input)
+        console.log(`collect info: doc number ${docInfo.books.length}`)
 
-    const contOutput = path.join(rootOutput, 'Contents')
-    const resOutput = path.join(rootOutput, 'Contents/Resources')
-    const docOutput = path.join(rootOutput, 'Contents/Resources/Documents')
-    fse.ensureDirSync(docOutput)     
-    
-    buildHtmlFiles(docInfo, docOutput)
-    buildMMHtmlFiles(docInfo, docOutput)
-    buildIndexHtml(docInfo, docOutput)
+        const contOutput = path.join(rootOutput, 'Contents')
+        const resOutput = path.join(rootOutput, 'Contents/Resources')
+        const docOutput = path.join(rootOutput, 'Contents/Resources/Documents')
+        fse.ensureDirSync(docOutput)     
+        
+        await buildHtmlFiles(docInfo, docOutput)
+        await buildMMHtmlFiles(docInfo, docOutput)
+        await buildIndexHtml(docInfo, docOutput)
 
-    buildInfoFile(contOutput, name)
-    buildIndexDB(resOutput, docInfo, docOutput).catch((error)=> console.log(error))
+        await buildInfoFile(contOutput, name)
+        await buildIndexDB(resOutput, docInfo, docOutput)
 
-    if(pkg === 'tgz') {
-        await buildPkgOfTGZ(output, docsetDirName)
+        if(pkg === 'tgz') {
+            await buildPkgOfTGZ(output, docsetDirName)
+        }
+
+        process.exit(0)
+
+    } catch(err) {
+        console.error(err)
+        process.exit(-1)
     }
-
 }

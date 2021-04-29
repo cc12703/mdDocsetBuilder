@@ -4,3 +4,5 @@
 /temp
 /project.code-workspace
 *.tgz
+/out
+/.mume

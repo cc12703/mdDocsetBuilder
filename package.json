@@ -1,6 +1,6 @@
 {
   "name": "@cc12703m/mddocsetbuilder",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "markdown文件树生成docset",
   "bin": {
     "mddocsetbuilder": "./bin/loader.js"
