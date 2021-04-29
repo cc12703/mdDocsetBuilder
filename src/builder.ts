@@ -80,7 +80,7 @@ function buildHtmlFiles(info: DocInfo, output: string) {
         book.htmlFile = path.join(output, fileName)
         book.htmlUrlPath = urlencode.encode(fileName)
 
-        mdFileToHtml(book.originFile, book.htmlFile)
+        mdFileToHtml(book.originFile, book.htmlFile).catch((error)=> console.log(error))
     })
 }
 
@@ -151,7 +151,7 @@ function buildMMHtmlFiles(info: DocInfo, output: string) {
         book.mmHtmlFile = path.join(output, fileName)
         book.mmHtmlUrlPath = urlencode.encode(fileName)
 
-        mdFileToMMHtml(book.originFile, book.mmHtmlFile)
+        mdFileToMMHtml(book.originFile, book.mmHtmlFile).catch((error)=> console.log(error))
     })
 }
 
@@ -303,7 +303,7 @@ export async function buildDocset(input: string, output: string, name: string, p
     buildIndexHtml(docInfo, docOutput)
 
     buildInfoFile(contOutput, name)
-    buildIndexDB(resOutput, docInfo, docOutput)
+    buildIndexDB(resOutput, docInfo, docOutput).catch((error)=> console.log(error))
 
     if(pkg === 'tgz') {
         await buildPkgOfTGZ(output, docsetDirName)
